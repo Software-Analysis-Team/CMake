@@ -1,6 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#pragma once
+#ifndef cmMakefileTargetGenerator_h
+#define cmMakefileTargetGenerator_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -59,8 +60,6 @@ public:
   std::string GetConfigName();
 
 protected:
-  void GetDeviceLinkFlags(std::string& linkFlags,
-                          const std::string& linkLanguage);
   void GetTargetLinkFlags(std::string& flags, const std::string& linkLanguage);
 
   // create the file and directory etc
@@ -104,10 +103,6 @@ protected:
   void WriteObjectDependRules(cmSourceFile const& source,
                               std::vector<std::string>& depends);
 
-  // CUDA device linking.
-  void WriteDeviceLinkRule(std::vector<std::string>& commands,
-                           const std::string& output);
-
   // write the build rule for a custom command
   void GenerateCustomRuleFile(cmCustomCommandGenerator const& ccg);
 
@@ -131,8 +126,7 @@ protected:
   void DriveCustomCommands(std::vector<std::string>& depends);
 
   // append intertarget dependencies
-  void AppendTargetDepends(std::vector<std::string>& depends,
-                           bool ignoreType = false);
+  void AppendTargetDepends(std::vector<std::string>& depends);
 
   // Append object file dependencies.
   void AppendObjectDepends(std::vector<std::string>& depends);
@@ -201,8 +195,6 @@ protected:
   unsigned long NumberOfProgressActions;
   bool NoRuleMessages;
 
-  bool CMP0113New = false;
-
   // the path to the directory the build file is in
   std::string TargetBuildDirectory;
   std::string TargetBuildDirectoryFull;
@@ -235,9 +227,6 @@ protected:
   // Set of extra output files to be driven by the build.
   std::set<std::string> ExtraFiles;
 
-  // Set of custom command output files to be driven by the build.
-  std::set<std::string> CustomCommandOutputs;
-
   using MultipleOutputPairsType = std::map<std::string, std::string>;
   MultipleOutputPairsType MultipleOutputPairs;
   bool WriteMakeRule(std::ostream& os, const char* comment,
@@ -254,3 +243,5 @@ protected:
   std::unique_ptr<cmOSXBundleGenerator> OSXBundleGenerator;
   std::unique_ptr<MacOSXContentGeneratorType> MacOSXContentGenerator;
 };
+
+#endif

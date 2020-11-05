@@ -12,3 +12,8 @@ CMakeUserPresets.json
 
 # Visual Studio Code
 .vscode/
+
+.idea/
+
+cmake-build-debug/
+

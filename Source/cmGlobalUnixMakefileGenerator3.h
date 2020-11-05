@@ -1,6 +1,7 @@
 /* Distributed under the OSI-approved BSD 3-Clause License.  See accompanying
    file Copyright.txt or https://cmake.org/licensing for details.  */
-#pragma once
+#ifndef cmGlobalUnixMakefileGenerator3_h
+#define cmGlobalUnixMakefileGenerator3_h
 
 #include "cmConfigure.h" // IWYU pragma: keep
 
@@ -67,13 +68,6 @@ public:
       new cmGlobalGeneratorSimpleFactory<cmGlobalUnixMakefileGenerator3>());
   }
 
-  ~cmGlobalUnixMakefileGenerator3() override;
-
-  cmGlobalUnixMakefileGenerator3(const cmGlobalUnixMakefileGenerator3&) =
-    delete;
-  cmGlobalUnixMakefileGenerator3& operator=(
-    const cmGlobalUnixMakefileGenerator3&) = delete;
-
   //! Get the name for the generator.
   std::string GetName() const override
   {
@@ -135,12 +129,6 @@ public:
       or dependencies.  */
   std::string GetEmptyRuleHackDepends() { return this->EmptyRuleHackDepends; }
 
-  /**
-   * Convert a file path to a Makefile target or dependency with
-   * escaping and quoting suitable for the generator's make tool.
-   */
-  std::string ConvertToMakefilePath(std::string const& path) const;
-
   // change the build command for speed
   std::vector<GeneratedMakeCommand> GenerateBuildCommand(
     const std::string& makeProgram, const std::string& projectName,
@@ -156,14 +144,14 @@ public:
                             const std::string& workingDirectory,
                             const std::string& compileCommand);
 
+  void AddCXXLinkCommand(const std::string& workingDirectory,
+                         const std::string& compileCommand);
+
   /** Does the make tool tolerate .NOTPARALLEL? */
   virtual bool AllowNotParallel() const { return true; }
 
   /** Does the make tool tolerate .DELETE_ON_ERROR? */
   virtual bool AllowDeleteOnError() const { return true; }
-
-  /** Does the make tool interpret '\#' as '#'?  */
-  virtual bool CanEscapeOctothorpe() const;
 
   bool IsIPOSupported() const override { return true; }
 
@@ -247,7 +235,8 @@ protected:
     std::set<cmGeneratorTarget const*>& emitted);
   size_t CountProgressMarksInAll(const cmLocalGenerator& lg);
 
-  std::unique_ptr<cmGeneratedFileStream> CommandDatabase;
+  cmGeneratedFileStream* CompileCommandDatabase;
+  cmGeneratedFileStream* LinkCommandDatabase;
 
 private:
   const char* GetBuildIgnoreErrorsFlag() const override { return "-i"; }
@@ -257,4 +246,7 @@ private:
            cmStateSnapshot::StrictWeakOrder>
     DirectoryTargetsMap;
   void InitializeProgressMarks() override;
+
 };
+
+#endif
