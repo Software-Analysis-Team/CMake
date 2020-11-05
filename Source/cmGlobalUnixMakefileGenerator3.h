@@ -156,6 +156,9 @@ public:
                             const std::string& workingDirectory,
                             const std::string& compileCommand);
 
+  void AddCXXLinkCommand(const std::string& workingDirectory,
+                            const std::string& compileCommand);
+
   /** Does the make tool tolerate .NOTPARALLEL? */
   virtual bool AllowNotParallel() const { return true; }
 
@@ -248,6 +251,9 @@ protected:
   size_t CountProgressMarksInAll(const cmLocalGenerator& lg);
 
   std::unique_ptr<cmGeneratedFileStream> CommandDatabase;
+  //GLEB CHANGES
+  std::unique_ptr<cmGeneratedFileStream> LinkCommandDatabase;
+  //GLEB CHANGES
 
 private:
   const char* GetBuildIgnoreErrorsFlag() const override { return "-i"; }

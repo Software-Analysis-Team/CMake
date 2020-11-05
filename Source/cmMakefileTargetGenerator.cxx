@@ -1802,6 +1802,24 @@ void cmMakefileTargetGenerator::CreateLinkScript(
   // Create the link script file.
   std::string linkScriptName =
     cmStrCat(this->TargetBuildDirectoryFull, '/', name);
+
+  //GLEB CHANGES
+  std::string workingDirectory = cmSystemTools::CollapseFullPath(
+    this->LocalGenerator->GetCurrentBinaryDirectory());
+//  std::string linkScriptNameInBuild =
+//    cmStrCat(workingDirectory, '/', name);
+//  cmGeneratedFileStream linkScriptStreaminBuild(linkScriptNameInBuild);
+//  linkScriptStreaminBuild.SetCopyIfDifferent(true);
+//  for (std::string const& link_command : link_commands) {
+//    // Do not write out empty commands or commands beginning in the
+//    // shell no-op ":".
+//    if (!link_command.empty() && link_command[0] != ':') {
+//      linkScriptStreaminBuild << link_command << "\n";
+//    }
+//  }
+
+  //GLEB CHANGES
+
   cmGeneratedFileStream linkScriptStream(linkScriptName);
   linkScriptStream.SetCopyIfDifferent(true);
   for (std::string const& link_command : link_commands) {
@@ -1810,6 +1828,7 @@ void cmMakefileTargetGenerator::CreateLinkScript(
     if (!link_command.empty() && link_command[0] != ':') {
       linkScriptStream << link_command << "\n";
     }
+    this->GlobalGenerator->AddCXXLinkCommand(workingDirectory, link_command);
   }
 
   // Create the makefile command to invoke the link script.

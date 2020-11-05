@@ -171,6 +171,33 @@ void cmGlobalUnixMakefileGenerator3::Generate()
   }
 }
 
+//GLEB CHANGES
+void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::string& workingDirectory,
+  const std::string& compileCommand)
+{
+  if (!this->LinkCommandDatabase) {
+    std::string commandDatabaseName =
+      this->GetCMakeInstance()->GetHomeOutputDirectory() +
+      "/link_commands.json";
+    this->LinkCommandDatabase =
+      cm::make_unique<cmGeneratedFileStream>(commandDatabaseName);
+    *this->LinkCommandDatabase << "[\n";
+  } else {
+    *this->LinkCommandDatabase << ",\n";
+  }
+  *this->LinkCommandDatabase << "{\n"
+                         << R"(  "directory": ")"
+                         << cmGlobalGenerator::EscapeJSON(workingDirectory)
+                         << "\",\n"
+                         << R"(  "command": ")"
+                         << cmGlobalGenerator::EscapeJSON(compileCommand)
+                         << "\"\n";
+//                         << R"(  "file": ")"
+//                         << cmGlobalGenerator::EscapeJSON(sourceFile)
+//                         << "\"\n}";
+}
+//GLEB CHANGES
+
 void cmGlobalUnixMakefileGenerator3::AddCXXCompileCommand(
   const std::string& sourceFile, const std::string& workingDirectory,
   const std::string& compileCommand)
