@@ -146,10 +146,11 @@ protected:
 
   /** Create a script to hold link rules and a command to invoke the
       script at build time.  */
-  void CreateLinkScript(const char* name,
-                        std::vector<std::string> const& link_commands,
-                        std::vector<std::string>& makefile_commands,
-                        std::vector<std::string>& makefile_depends);
+  void CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
+                        std::vector<std::string> &makefile_commands, std::vector<std::string> &makefile_depends);
+
+  void CreateLinkScript1(const char *name, std::string &files
+                         , std::vector<std::string> const &link_commands);
 
   std::unique_ptr<cmLinkLineComputer> CreateLinkLineComputer(
     cmOutputConverter* outputConverter, cmStateDirectory const& stateDir);

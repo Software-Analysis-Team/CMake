@@ -1794,10 +1794,47 @@ void cmMakefileTargetGenerator::CloseFileStreams()
   this->FlagFileStream.reset();
 }
 
-void cmMakefileTargetGenerator::CreateLinkScript(
-  const char* name, std::vector<std::string> const& link_commands,
-  std::vector<std::string>& makefile_commands,
-  std::vector<std::string>& makefile_depends)
+//GLEB CHANGES
+void cmMakefileTargetGenerator::CreateLinkScript1(const char *name, std::string &files
+                                                  , std::vector<std::string> const &link_commands)
+{
+    // Create the link script file.
+    std::string linkScriptName =
+            cmStrCat(this->TargetBuildDirectoryFull, '/', name);
+
+    //GLEB CHANGES
+    std::string workingDirectory = cmSystemTools::CollapseFullPath(
+            this->LocalGenerator->GetCurrentBinaryDirectory());
+
+  std::string delimiter = " ";
+  size_t pos = 0;
+  std::string token;
+  std::string resultString;
+  while ((pos = files.find(delimiter)) != std::string::npos) {
+    token = files.substr(0, pos);
+    resultString += cmStrCat(workingDirectory, '/', token) + " ";
+    files.erase(0, pos + delimiter.size());
+  }
+  resultString += cmStrCat(workingDirectory, '/', files);
+    //GLEB CHANGES
+
+    cmGeneratedFileStream linkScriptStream(linkScriptName);
+    linkScriptStream.SetCopyIfDifferent(true);
+    for (std::string const& link_command : link_commands) {
+
+        if (!link_command.empty() && link_command[0] != ':') {
+            linkScriptStream << link_command << "\n";
+        }
+
+        this->GlobalGenerator->AddCXXLinkCommand(resultString, workingDirectory, link_command);
+    }
+}
+//GLEB CHANGES
+
+
+void cmMakefileTargetGenerator::CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
+                                                 std::vector<std::string> &makefile_commands,
+                                                 std::vector<std::string> &makefile_depends)
 {
   // Create the link script file.
   std::string linkScriptName =
@@ -1817,7 +1854,14 @@ void cmMakefileTargetGenerator::CreateLinkScript(
 //      linkScriptStreaminBuild << link_command << "\n";
 //    }
 //  }
-
+//  std::string delimiter = " ";
+//  size_t pos = 0;
+//  std::string token;
+//  while ((pos = files.find(delimiter)) != std::string::npos) {
+//    token = files.substr(0, pos);
+//    std::cout << token << std::endl;
+//    files.erase(0, pos + delimiter.size());
+//  }
   //GLEB CHANGES
 
   cmGeneratedFileStream linkScriptStream(linkScriptName);
@@ -1828,7 +1872,6 @@ void cmMakefileTargetGenerator::CreateLinkScript(
     if (!link_command.empty() && link_command[0] != ':') {
       linkScriptStream << link_command << "\n";
     }
-    this->GlobalGenerator->AddCXXLinkCommand(workingDirectory, link_command);
   }
 
   // Create the makefile command to invoke the link script.

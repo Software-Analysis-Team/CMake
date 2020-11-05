@@ -258,7 +258,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
   if (useLinkScript) {
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
-    this->CreateLinkScript(name, real_link_commands, commands1, depends);
+      this->CreateLinkScript(name, real_link_commands, commands1, depends);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -496,8 +496,10 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   bool const useResponseFileForLibs =
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
+  std::string buildObjs;
   // Expand the rule variables.
   {
+      cmRulePlaceholderExpander::RuleVariables vars;
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
 
@@ -519,7 +521,6 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
 
     // Construct object file lists that may be needed to expand the
     // rule.
-    std::string buildObjs;
     this->CreateObjectLists(useLinkScript, false, useResponseFileForObjects,
                             buildObjs, depends, useWatcomQuote);
     if (!this->DeviceLinkObject.empty()) {
@@ -536,7 +537,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
 
     std::string manifests = this->GetManifests(this->GetConfigName());
 
-    cmRulePlaceholderExpander::RuleVariables vars;
+
     vars.CMTargetName = this->GeneratorTarget->GetName().c_str();
     vars.CMTargetType =
       cmState::GetTargetTypeName(this->GeneratorTarget->GetType()).c_str();
@@ -617,7 +618,8 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   if (useLinkScript) {
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
-    this->CreateLinkScript(name, real_link_commands, commands1, depends);
+      this->CreateLinkScript(name, real_link_commands, commands1, depends);
+      this->CreateLinkScript1(name, buildObjs, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;

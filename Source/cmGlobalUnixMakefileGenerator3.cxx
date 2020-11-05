@@ -172,7 +172,7 @@ void cmGlobalUnixMakefileGenerator3::Generate()
 }
 
 //GLEB CHANGES
-void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::string& workingDirectory,
+void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::string& sourceFiles, const std::string& workingDirectory,
   const std::string& compileCommand)
 {
   if (!this->LinkCommandDatabase) {
@@ -191,10 +191,10 @@ void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::string& workin
                          << "\",\n"
                          << R"(  "command": ")"
                          << cmGlobalGenerator::EscapeJSON(compileCommand)
-                         << "\"\n";
-//                         << R"(  "file": ")"
-//                         << cmGlobalGenerator::EscapeJSON(sourceFile)
-//                         << "\"\n}";
+                         << "\",\n"
+                         << R"(  "file": ")"
+                         << cmGlobalGenerator::EscapeJSONArray(sourceFiles)
+                         << "\"\n}";
 }
 //GLEB CHANGES
 

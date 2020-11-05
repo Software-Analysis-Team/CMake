@@ -3236,6 +3236,36 @@ std::string cmGlobalGenerator::EscapeJSON(const std::string& s)
   return result;
 }
 
+std::string cmGlobalGenerator::EscapeJSONArray(const std::string& s)
+{
+    std::string result;
+    result.reserve(s.size() + 2);
+    result += '[';
+    for (char i : s) {
+        switch (i) {
+            case '"':
+            case ' ':
+                result += ',';
+                result += i;
+                break;
+            case '\\':
+                result += '\\';
+                result += i;
+                break;
+            case '\n':
+                result += "\\n";
+                break;
+            case '\t':
+                result += "\\t";
+                break;
+            default:
+                result += i;
+        }
+    }
+    result += ']';
+    return result;
+}
+
 void cmGlobalGenerator::SetFilenameTargetDepends(
   cmSourceFile* sf, std::set<cmGeneratorTarget const*> const& tgts)
 {
