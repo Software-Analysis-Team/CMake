@@ -50,7 +50,9 @@ def main():
                                    , stdout=subprocess.PIPE
                                    , stderr=subprocess.PIPE)
         _, stderr = process.communicate()
+        return_code = process.returncode
         assert (stderr == b'')
+        assert (return_code == 0)
 
     for elem in link_data:
         os.chdir(cur_dir)
@@ -66,7 +68,9 @@ def main():
                                    , stderr=subprocess.PIPE)
 
         _, stderr = process.communicate()
+        return_code = process.returncode
         assert (stderr == b'')
+        assert (return_code == 0)
 
 
 if __name__ == '__main__':
