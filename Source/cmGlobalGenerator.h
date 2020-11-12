@@ -469,7 +469,7 @@ public:
   virtual bool SupportsDefaultConfigs() const { return false; }
 
   static std::string EscapeJSON(const std::string& s);
-    static std::string EscapeJSONArray(const std::string& s);
+  static std::string EscapeJSONArray(const std::string& s);
 
   void ProcessEvaluationFiles();
 

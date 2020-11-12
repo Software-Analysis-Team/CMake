@@ -156,8 +156,8 @@ public:
                             const std::string& workingDirectory,
                             const std::string& compileCommand);
 
-  void AddCXXLinkCommand(const std::string& sourceFiles, const std::string& workingDirectory,
-                            const std::string& compileCommand);
+  void AddCXXLinkCommand(const std::vector<std::string>& sourceFiles, const std::string& workingDirectory,
+                         const std::string& compileCommand);
 
   /** Does the make tool tolerate .NOTPARALLEL? */
   virtual bool AllowNotParallel() const { return true; }

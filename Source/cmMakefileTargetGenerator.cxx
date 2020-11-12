@@ -1809,13 +1809,13 @@ void cmMakefileTargetGenerator::CreateLinkScript1(const char *name, std::string 
   std::string delimiter = " ";
   size_t pos = 0;
   std::string token;
-  std::string resultString;
+  std::vector<std::string> resultStringArr;
   while ((pos = files.find(delimiter)) != std::string::npos) {
     token = files.substr(0, pos);
-    resultString += cmStrCat(workingDirectory, '/', token) + " ";
+    resultStringArr.push_back(cmStrCat(workingDirectory, '/', token));
     files.erase(0, pos + delimiter.size());
   }
-  resultString += cmStrCat(workingDirectory, '/', files);
+  resultStringArr.push_back(cmStrCat(workingDirectory, '/', files));
     //GLEB CHANGES
 
     cmGeneratedFileStream linkScriptStream(linkScriptName);
@@ -1826,7 +1826,7 @@ void cmMakefileTargetGenerator::CreateLinkScript1(const char *name, std::string 
             linkScriptStream << link_command << "\n";
         }
 
-        this->GlobalGenerator->AddCXXLinkCommand(resultString, workingDirectory, link_command);
+        this->GlobalGenerator->AddCXXLinkCommand(resultStringArr, workingDirectory, link_command.substr(0, link_command.size() - 1));
     }
 }
 //GLEB CHANGES
