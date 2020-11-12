@@ -170,10 +170,12 @@ The following characters have special meaning in regular expressions:
   Matches a pattern on either side of the ``|``
 ``()``
   Saves a matched subexpression, which can be referenced
-  in the ``REGEX REPLACE`` operation. Additionally it is saved
-  by all regular expression-related commands, including
-  e.g. :command:`if(MATCHES)`, in the variables
-  :variable:`CMAKE_MATCH_<n>` for ``<n>`` 0..9.
+  in the ``REGEX REPLACE`` operation.
+
+  .. versionadded:: 3.9
+    All regular expression-related commands, including e.g.
+    :command:`if(MATCHES)`, save subgroup matches in the variables
+    :variable:`CMAKE_MATCH_<n>` for ``<n>`` 0..9.
 
 ``*``, ``+`` and ``?`` have higher precedence than concatenation.  ``|``
 has lower precedence than concatenation.  This means that the regular
@@ -205,6 +207,8 @@ Manipulation
 
   string(APPEND <string_variable> [<input>...])
 
+.. versionadded:: 3.4
+
 Append all the ``<input>`` arguments to the string.
 
 .. _PREPEND:
@@ -212,6 +216,8 @@ Append all the ``<input>`` arguments to the string.
 .. code-block:: cmake
 
   string(PREPEND <string_variable> [<input>...])
+
+.. versionadded:: 3.10
 
 Prepend all the ``<input>`` arguments to the string.
 
@@ -229,6 +235,8 @@ the result in the named ``<output_variable>``.
 .. code-block:: cmake
 
   string(JOIN <glue> <output_variable> [<input>...])
+
+.. versionadded:: 3.12
 
 Join all the ``<input>`` arguments together using the ``<glue>``
 string and store the result in the named ``<output_variable>``.
@@ -271,15 +279,14 @@ result stored in ``<output_variable>`` will *not* be the number of characters.
 
 Store in an ``<output_variable>`` a substring of a given ``<string>``.  If
 ``<length>`` is ``-1`` the remainder of the string starting at ``<begin>``
-will be returned.  If ``<string>`` is shorter than ``<length>`` then the
-end of the string is used instead.
+will be returned.
+
+.. versionadded:: 3.2
+  If ``<string>`` is shorter than ``<length>`` then the end of the string
+  is used instead.  Previous versions of CMake reported an error in this case.
 
 Both ``<begin>`` and ``<length>`` are counted in bytes, so care must
 be exercised if ``<string>`` could contain multi-byte characters.
-
-.. note::
-  CMake 3.1 and below reported an error if ``<length>`` pointed past
-  the end of ``<string>``.
 
 .. _STRIP:
 
@@ -296,6 +303,8 @@ leading and trailing spaces removed.
 
   string(GENEX_STRIP <string> <output_variable>)
 
+.. versionadded:: 3.1
+
 Strip any :manual:`generator expressions <cmake-generator-expressions(7)>`
 from the input ``<string>`` and store the result in the ``<output_variable>``.
 
@@ -304,6 +313,8 @@ from the input ``<string>`` and store the result in the ``<output_variable>``.
 .. code-block:: cmake
 
   string(REPEAT <string> <count> <output_variable>)
+
+.. versionadded:: 3.15
 
 Produce the output string as the input ``<string>`` repeated ``<count>`` times.
 
@@ -322,6 +333,9 @@ Comparison
   string(COMPARE GREATER_EQUAL <string1> <string2> <output_variable>)
 
 Compare the strings and store true or false in the ``<output_variable>``.
+
+.. versionadded:: 3.7
+  Added ``LESS_EQUAL`` and ``GREATER_EQUAL`` options.
 
 .. _`Supported Hash Algorithms`:
 
@@ -358,6 +372,9 @@ The supported ``<HASH>`` algorithm names are:
 ``SHA3_512``
   Keccak SHA-3.
 
+.. versionadded:: 3.8
+  Added ``SHA3`` hash algorithms.
+
 Generation
 ^^^^^^^^^^
 
@@ -374,6 +391,8 @@ Convert all numbers into corresponding ASCII characters.
 .. code-block:: cmake
 
   string(HEX <string> <output_variable>)
+
+.. versionadded:: 3.18
 
 Convert each byte in the input ``<string>`` to its hexadecimal representation
 and store the concatenated hex digits in the ``<output_variable>``. Letters in
@@ -451,6 +470,18 @@ specifiers:
    %y        The last two digits of the current year (00-99)
    %Y        The current year.
 
+.. versionadded:: 3.6
+  ``%s`` format specifier (UNIX time).
+
+.. versionadded:: 3.7
+  ``%a`` and ``%b`` format specifiers (abbreviated month and weekday names).
+
+.. versionadded:: 3.8
+  ``%%`` specifier (literal ``%``).
+
+.. versionadded:: 3.7
+  ``%A`` and ``%B`` format specifiers (full month and weekday names).
+
 Unknown format specifiers will be ignored and copied to the output
 as-is.
 
@@ -461,8 +492,7 @@ If no explicit ``<format_string>`` is given, it will default to:
    %Y-%m-%dT%H:%M:%S    for local time.
    %Y-%m-%dT%H:%M:%SZ   for UTC.
 
-.. note::
-
+.. versionadded:: 3.8
   If the ``SOURCE_DATE_EPOCH`` environment variable is set,
   its value will be used instead of the current time.
   See https://reproducible-builds.org/specs/source-date-epoch/ for details.
@@ -474,6 +504,8 @@ If no explicit ``<format_string>`` is given, it will default to:
   string(UUID <output_variable> NAMESPACE <namespace> NAME <name>
          TYPE <MD5|SHA1> [UPPER])
 
+.. versionadded:: 3.1
+
 Create a universally unique identifier (aka GUID) as per RFC4122
 based on the hash of the combined values of ``<namespace>``
 (which itself has to be a valid UUID) and ``<name>``.
@@ -484,12 +516,24 @@ where each ``x`` represents a lower case hexadecimal character.
 Where required, an uppercase representation can be requested
 with the optional ``UPPER`` flag.
 
+.. _JSON:
+
 JSON
 ^^^^
 
-.. _JSON:
+.. versionadded:: 3.19
 
-Functionality for querying a JSON string
+Functionality for querying a JSON string.
+
+.. note::
+  In each of the following JSON-related subcommands, if the optional
+  ``ERROR_VARIABLE`` argument is given, errors will be reported in
+  ``<error-variable>`` and the ``<out-var>`` will be set to
+  ``<member|index>-[<member|index>...]-NOTFOUND`` with the path elements
+  up to the point where the error occurred, or just ``NOTFOUND`` if there
+  is no relevant path.  If an error occurs but the ``ERROR_VARIABLE``
+  option is not present, a fatal error message is generated.  If no error
+  occurs, the ``<error-variable>`` will be set to ``NOTFOUND``.
 
 .. _GET:
 .. code-block:: cmake
@@ -522,7 +566,7 @@ will be set to one of ``NULL``, ``NUMBER``, ``STRING``, ``BOOLEAN``,
          MEMBER <json-string>
          [<member|index> ...] <index>)
 
-Get the name of the ``<index>``:th member in ``<json-string>`` at the location
+Get the name of the ``<index>``-th member in ``<json-string>`` at the location
 given by the list of ``<member|index>`` arguments.
 Requires an element of object type.
 
@@ -534,7 +578,7 @@ Requires an element of object type.
 
 Get the length of an element in ``<json-string>`` at the location
 given by the list of ``<member|index>`` arguments.
-Required an element of array or object type.
+Requires an element of array or object type.
 
 .. _REMOVE:
 .. code-block:: cmake
@@ -544,7 +588,7 @@ Required an element of array or object type.
 
 Remove an element from ``<json-string>`` at the location
 given by the list of ``<member|index>`` arguments. The JSON string
-without the removed element will we written in ``<out-var>``.
+without the removed element will be stored in ``<out-var>``.
 
 .. _SET:
 .. code-block:: cmake
@@ -563,13 +607,6 @@ The contents of ``<value>`` should be valid JSON.
          EQUAL <json-string1> <json-string2>)
 
 Compare the two JSON objects given by ``<json-string1>`` and ``<json-string2>``
-for equality
-
-
-If the optional ``ERROR_VARIABLE`` argument is given errors will be
-reported in ``<error-variable>``. If no error occurs the ``<error-variable>``
-will be set to ``NOTFOUND``. If ``ERROR_VARIABLE`` is not set a CMake error
-will be issued.
-When an error occurs the ``<out-var>`` will be set to
-``<member|index>-[<member|index>...]-NOTFOUND`` with the path elements up to
-the point where the error occurred.
+for equality.  The contents of ``<json-string1>`` and ``<json-string2>``
+should be valid JSON.  The ``<out-var>`` will be set to a true value if the
+JSON objects are considered equal, or a false value otherwise.

@@ -72,6 +72,7 @@
         "TEST_DOLLAR": {
           "value": "${dollar}"
         },
+        "TEST_SOURCE_DIR_NAME": "${sourceDirName}",
         "TEST_ENV_REF": "$env{TEST_ENV_REF}",
         "TEST_ENV": "$env{TEST_ENV}",
         "TEST_D_ENV_REF": "$env{TEST_D_ENV_REF}",
@@ -155,6 +156,21 @@
     },
     {
       "name": "GoodNoS",
+      "generator": "@RunCMake_GENERATOR@",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "GoodNoSCachePrep",
+      "generator": "@RunCMake_GENERATOR@",
+      "binaryDir": "${sourceParentDir}/GoodNoSCachePrep-build"
+    },
+    {
+      "name": "GoodNoSCache",
+      "generator": "@RunCMake_GENERATOR@",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "GoodNoSourceArg",
       "generator": "@RunCMake_GENERATOR@",
       "binaryDir": "${sourceDir}/build"
     },
@@ -451,28 +467,38 @@
       "binaryDir": "${sourceDir}/build"
     },
     {
-      "name": "CMakeGeneratorConfigNone",
+      "name": "ArchToolsetStrategyNone",
       "generator": "@RunCMake_GENERATOR@",
       "architecture": "a",
       "toolset": "a",
       "binaryDir": "${sourceDir}/build"
     },
     {
-      "name": "CMakeGeneratorConfigBase",
+      "name": "ArchToolsetStrategyBase",
       "generator": "@RunCMake_GENERATOR@",
-      "architecture": "a",
-      "toolset": "a",
-      "cmakeGeneratorConfig": "ignore",
+      "architecture": {
+        "value": "a",
+        "strategy": "external"
+      },
+      "toolset": {
+        "value": "a",
+        "strategy": "external"
+      },
       "binaryDir": "${sourceDir}/build"
     },
     {
-      "name": "CMakeGeneratorConfigDefault",
-      "inherits": "CMakeGeneratorConfigBase",
-      "cmakeGeneratorConfig": "default"
+      "name": "ArchToolsetStrategyDefault",
+      "inherits": "ArchToolsetStrategyBase",
+      "architecture": {
+        "strategy": "set"
+      },
+      "toolset": {
+        "strategy": "set"
+      }
     },
     {
-      "name": "CMakeGeneratorConfigIgnore",
-      "inherits": "CMakeGeneratorConfigBase"
+      "name": "ArchToolsetStrategyIgnore",
+      "inherits": "ArchToolsetStrategyBase"
     }
   ]
 }
