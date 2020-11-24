@@ -39,7 +39,7 @@ def main():
                 os.makedirs(dir)
             os.chdir(dir)
 
-        path_to_obj = re.findall(r'(\S*)\.c\.o', elem.get('command'))
+        path_to_obj = re.findall(r'(\S*)\.o', elem.get('command'))
         for directories in path_to_obj:
             for dir in directories.split('\\'):
                 if not os.path.exists(dir):
@@ -51,6 +51,8 @@ def main():
                                    , stderr=subprocess.PIPE)
         _, stderr = process.communicate()
         return_code = process.returncode
+        print(process)
+        print(stderr)
         assert (stderr == b'')
         assert (return_code == 0)
 
@@ -69,6 +71,8 @@ def main():
 
         _, stderr = process.communicate()
         return_code = process.returncode
+        print(process)
+        print(stderr)
         assert (stderr == b'')
         assert (return_code == 0)
 
