@@ -3233,7 +3233,10 @@ std::string cmGlobalGenerator::EscapeJSON(const std::string& s)
         result += i;
     }
   }
-  return result;
+    if (result[result.size() - 1] == ' ') {
+        return result.substr(0, result.size() - 1);
+    }
+    return result;
 }
 
 std::string cmGlobalGenerator::EscapeJSONArray(const std::string& s)

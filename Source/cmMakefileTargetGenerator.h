@@ -149,8 +149,8 @@ protected:
   void CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
                         std::vector<std::string> &makefile_commands, std::vector<std::string> &makefile_depends);
 
-  void CreateLinkScript1(const char *name, std::string &files
-                         , std::vector<std::string> const &link_commands);
+  void CreateLinkScriptJSON(const char *name, const std::vector<std::string>& files
+            , std::vector<std::string> const &link_commands);
 
   std::unique_ptr<cmLinkLineComputer> CreateLinkLineComputer(
     cmOutputConverter* outputConverter, cmStateDirectory const& stateDir);

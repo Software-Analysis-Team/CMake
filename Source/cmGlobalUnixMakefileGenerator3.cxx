@@ -178,7 +178,7 @@ void cmGlobalUnixMakefileGenerator3::Generate()
 
 //GLEB CHANGES
 void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::vector<std::string>& sourceFiles, const std::string& workingDirectory,
-                                                       const std::string& compileCommand)
+                                                       const std::string& linkCommand)
 {
   if (!this->LinkCommandDatabase) {
     std::string commandDatabaseName =
@@ -195,9 +195,9 @@ void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::vector<std::st
                          << cmGlobalGenerator::EscapeJSON(workingDirectory)
                          << "\",\n"
                          << R"(  "command": ")"
-                         << cmGlobalGenerator::EscapeJSON(compileCommand)
+                         << cmGlobalGenerator::EscapeJSON(linkCommand)
                          << "\",\n"
-                         << R"(  "file": [)";
+                         << R"(  "files": [)";
 
    for (unsigned long i = 0; i < sourceFiles.size(); i++){
        *this->LinkCommandDatabase << "\"" << cmGlobalGenerator::EscapeJSON(sourceFiles[i]) << "\"";

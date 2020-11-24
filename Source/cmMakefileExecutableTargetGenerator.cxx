@@ -171,6 +171,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
   // Expand the rule variables.
+  std::string buildObjs;
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -193,7 +194,6 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
 
     // Construct object file lists that may be needed to expand the
     // rule.
-    std::string buildObjs;
     this->CreateObjectLists(useLinkScript, false, useResponseFileForObjects,
                             buildObjs, depends, useWatcomQuote);
 
@@ -260,6 +260,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
+      this->CreateLinkScriptJSON(name, std::vector<std::string>{buildObjs}, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -620,7 +621,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScript1(name, buildObjs, real_link_commands);
+      this->CreateLinkScriptJSON(name, std::vector<std::string>{buildObjs}, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
