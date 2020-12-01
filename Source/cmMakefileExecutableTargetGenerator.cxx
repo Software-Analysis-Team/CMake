@@ -501,7 +501,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   std::string buildObjs;
   // Expand the rule variables.
   {
-      cmRulePlaceholderExpander::RuleVariables vars;
+
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
 
@@ -539,6 +539,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
 
     std::string manifests = this->GetManifests(this->GetConfigName());
 
+    cmRulePlaceholderExpander::RuleVariables vars;
 
     vars.CMTargetName = this->GeneratorTarget->GetName().c_str();
     vars.CMTargetType =

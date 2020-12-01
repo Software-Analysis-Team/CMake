@@ -1800,15 +1800,12 @@ void cmMakefileTargetGenerator::CloseFileStreams()
   this->FlagFileStream.reset();
 }
 
-//GLEB CHANGES
-void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, const std::vector<std::string>& files,
+void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, const std::vector<std::string>& filesName,
                                                      const std::vector<std::string> &link_commands) {
 
-    // Create the link script file.
     std::string linkScriptName =
             cmStrCat(this->TargetBuildDirectoryFull, '/', name);
 
-    //GLEB CHANGES
     std::string workingDirectory = cmSystemTools::CollapseFullPath(
             this->LocalGenerator->GetCurrentBinaryDirectory());
 
@@ -1816,15 +1813,14 @@ void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, const std
     std::string delimiter = " ";
     size_t pos = 0;
     std::string token;
-    for (auto file : files){
+    for (auto file : filesName){
         while ((pos = file.find(delimiter)) != std::string::npos) {
             token = file.substr(0, pos);
-            resultStringArr.push_back(cmStrCat(workingDirectory, '/', token));
+            resultStringArr.emplace_back(cmStrCat(workingDirectory, '/', token));
             file.erase(0, pos + delimiter.size());
         }
-        resultStringArr.push_back(cmStrCat(workingDirectory, '/', file));;
+        resultStringArr.emplace_back(cmStrCat(workingDirectory, '/', file));
     }
-    //GLEB CHANGES
 
     cmGeneratedFileStream linkScriptStream(linkScriptName);
     linkScriptStream.SetCopyIfDifferent(true);
@@ -1833,14 +1829,10 @@ void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, const std
         if (!link_command.empty() && link_command[0] != ':') {
             linkScriptStream << link_command << "\n";
         }
-//        if (link_command[link_command.size() - 1] == ' '){
-//            link_command.substr(0, link_command.size() - 1);
-//        }
+
         this->GlobalGenerator->AddCXXLinkCommand(resultStringArr, workingDirectory, link_command);
     }
 }
-
-//GLEB CHANGES
 
 
 void cmMakefileTargetGenerator::CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
@@ -1851,8 +1843,6 @@ void cmMakefileTargetGenerator::CreateLinkScript(const char *name, std::vector<s
   std::string linkScriptName =
     cmStrCat(this->TargetBuildDirectoryFull, '/', name);
 
-  std::string workingDirectory = cmSystemTools::CollapseFullPath(
-    this->LocalGenerator->GetCurrentBinaryDirectory());
   cmGeneratedFileStream linkScriptStream(linkScriptName);
   linkScriptStream.SetCopyIfDifferent(true);
   for (std::string const& link_command : link_commands) {

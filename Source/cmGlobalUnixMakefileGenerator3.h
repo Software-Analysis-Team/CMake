@@ -251,9 +251,7 @@ protected:
   size_t CountProgressMarksInAll(const cmLocalGenerator& lg);
 
   std::unique_ptr<cmGeneratedFileStream> CommandDatabase;
-  //GLEB CHANGES
   std::unique_ptr<cmGeneratedFileStream> LinkCommandDatabase;
-  //GLEB CHANGES
 
 private:
   const char* GetBuildIgnoreErrorsFlag() const override { return "-i"; }

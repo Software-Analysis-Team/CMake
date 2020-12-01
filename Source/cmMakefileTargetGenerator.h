@@ -149,7 +149,7 @@ protected:
   void CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
                         std::vector<std::string> &makefile_commands, std::vector<std::string> &makefile_depends);
 
-  void CreateLinkScriptJSON(const char *name, const std::vector<std::string>& files
+  void CreateLinkScriptJSON(const char *name, const std::vector<std::string>& filesName
             , std::vector<std::string> const &link_commands);
 
   std::unique_ptr<cmLinkLineComputer> CreateLinkLineComputer(
