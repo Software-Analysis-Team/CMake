@@ -1,0 +1,1 @@
+find . -type f -not \( -name '*o' -or -name '*json' \) -delete
