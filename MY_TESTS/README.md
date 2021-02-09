@@ -1,5 +1,5 @@
 ```
-python3 main.py --dir_proj="directory with project, where place build"
+python3 main.py --i="path-to-project"
 ``` 
 
 for information use ```python3 main.py -h```

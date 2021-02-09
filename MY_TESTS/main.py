@@ -5,6 +5,43 @@ import subprocess
 import shlex
 
 
+def prepare_commands():
+    mycmake = '/home/gleb/Documents/CMake/cmake-build-debug/bin/cmake'
+
+    process1 = subprocess.Popen(f'{mycmake} ..'
+                                , shell=True)
+    process1.wait()
+    print(f'myCMake return code: {process1.returncode}')
+
+    process_delete = subprocess.Popen('find . -type f -not \( -name \'*o\' -or -name \'*json\' \) -delete'
+                                , shell=True)
+    process_delete.wait()
+
+    print(f'delete second return code: {process_delete.returncode}')
+
+
+def write_statistics():
+    cmd1 = ['git', 'ls-files']
+    cmd2 = ['xargs', 'wc', '-l']
+    process1 = subprocess.Popen(cmd1
+                                , stdout=subprocess.PIPE)
+    process1.wait()
+    process2 = subprocess.Popen(cmd2
+                                , stdin=process1.stdout
+                                , stdout=subprocess.PIPE
+                                , stderr=subprocess.PIPE)
+    process2.wait()
+
+    stdout, stderr = process2.communicate()
+    new_stdout = stdout.decode("utf-8").replace(' ', '').split('\n')
+    total_files, total_lines = len(new_stdout) - 2, new_stdout[len(new_stdout) - 2].split('t')[0]
+    print(f'totalf files: {total_files}\n')
+    print(f'total lines: {total_lines}')
+    with open('statistics', "w") as file:
+        file.write(f'totalf files: {total_files}\n')
+        file.write(f'total lines: {total_lines}')
+
+
 def sort_link_json(tmp_name, link_name):
     with open(link_name, "r") as read_file:
         link_data = json.load(read_file)
@@ -46,20 +83,12 @@ def main():
     )
 
     args = parser.parse_args()
-    # repo = args.i
-    # command = shlex.split('git ls-files | xargs cat | wc -l')
-    # process = subprocess.Popen(command
-    #                            , stdout=subprocess.PIPE
-    #                            , stderr=subprocess.PIPE)
-    #
-    # stdout, stderr = process.communicate()
-    # print(stderr)
-    # if process.returncode != 0:
-    #     print(f"Cannot write lines of code in repo {repo}")
-
-    build_dir = os.path.join(args.i, 'build')
-    print(build_dir)
+    repo = args.i
+    os.chdir(repo)
+    build_dir = os.path.join(os.getcwd(), 'build')
+    # write_statistics()
     os.chdir(build_dir)
+    prepare_commands()
 
     sort_link_json(tmp_name, link_name)
 
@@ -92,6 +121,8 @@ def main():
     print('----------------------------------------------------------------------------')
     print('----------------------------------------------------------------------------')
 
+    all_commands = len(link_data)
+    incorrect_commands = 0
     build_dir = " "
     for elem in link_data:
         if build_dir != elem.get('directory'):
@@ -108,8 +139,18 @@ def main():
         return_code = process.returncode
         print(process)
         print(stderr)
-        assert (stderr == b'')
-        assert (return_code == 0)
+
+        if stderr != b'' or return_code != 0:
+            incorrect_commands += 1
+
+        # assert (stderr == b'')
+        # assert (return_code == 0)
+    print('----------------------------------------------------------------------------')
+    print('----------------------------------------------------------------------------')
+    print('----------------------------------------------------------------------------')
+    print('----------------------------------------------------------------------------')
+    print(all_commands)
+    print(incorrect_commands)
 
 
 if __name__ == '__main__':
