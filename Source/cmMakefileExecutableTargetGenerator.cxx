@@ -136,7 +136,12 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
 
   // Build list of dependencies.
   std::vector<std::string> depends;
+
+  // Build other list of dependencies, which will use to get json's links command
+  std::vector<std::string> dependsForJson;
+
   this->AppendLinkDepends(depends, linkLanguage);
+  this->AppendLinkDependsForJson(dependsForJson, linkLanguage);
 
   // Build a list of compiler flags and linker flags.
   std::string langFlags;
@@ -172,6 +177,8 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
 
   // Expand the rule variables.
   std::string buildObjs;
+    // Collect up flags to link in needed libraries.
+    std::string linkLibs;
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -187,8 +194,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     linkLineComputer->SetUseWatcomQuote(useWatcomQuote);
     linkLineComputer->SetRelink(relink);
 
-    // Collect up flags to link in needed libraries.
-    std::string linkLibs;
+
     this->CreateLinkLibs(linkLineComputer.get(), linkLibs,
                          useResponseFileForLibs, depends);
 
@@ -260,7 +266,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, std::vector<std::string>{buildObjs}, real_link_commands);
+      this->CreateLinkScriptJSON(name, depends, linkLibs, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -358,9 +364,14 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
 
   // Build list of dependencies.
   std::vector<std::string> depends;
+  // Build other list of dependencies, which will use to get json's links command
+  std::vector<std::string> dependsForJson;
+
   this->AppendLinkDepends(depends, linkLanguage);
+  this->AppendLinkDependsForJson(dependsForJson, linkLanguage);
   if (!this->DeviceLinkObject.empty()) {
     depends.push_back(this->DeviceLinkObject);
+    dependsForJson.push_back(this->DeviceLinkObject);
   }
 
   this->NumberOfProgressActions++;
@@ -498,10 +509,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   bool const useResponseFileForLibs =
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
-  std::string buildObjs;
-  // Expand the rule variables.
   {
-
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
 
@@ -516,13 +524,16 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     linkLineComputer->SetUseWatcomQuote(useWatcomQuote);
     linkLineComputer->SetRelink(relink);
 
+    // Expand the rule variables.
     // Collect up flags to link in needed libraries.
     std::string linkLibs;
     this->CreateLinkLibs(linkLineComputer.get(), linkLibs,
                          useResponseFileForLibs, depends);
 
+    std::string buildObjs;
     // Construct object file lists that may be needed to expand the
     // rule.
+
     this->CreateObjectLists(useLinkScript, false, useResponseFileForObjects,
                             buildObjs, depends, useWatcomQuote);
     if (!this->DeviceLinkObject.empty()) {
@@ -622,7 +633,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, std::vector<std::string>{buildObjs}, real_link_commands);
+      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -663,8 +674,10 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   // symlink.
   if (targetFullPath != targetFullPathReal) {
     depends.clear();
+    dependsForJson.clear();
     commands.clear();
     depends.push_back(targetFullPathReal);
+    dependsForJson.push_back(targetFullPathReal);
     this->LocalGenerator->WriteMakeRule(*this->BuildFileStream, nullptr,
                                         targetFullPath, depends, commands,
                                         false);

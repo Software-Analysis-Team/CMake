@@ -137,6 +137,9 @@ protected:
   // Append object file dependencies.
   void AppendObjectDepends(std::vector<std::string>& depends);
 
+  void AppendLinkDependsForJson(std::vector<std::string>& depends,
+                                const std::string& linkLanguage);
+
   // Append link rule dependencies (objects, etc.).
   void AppendLinkDepends(std::vector<std::string>& depends,
                          const std::string& linkLanguage);
@@ -149,8 +152,10 @@ protected:
   void CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
                         std::vector<std::string> &makefile_commands, std::vector<std::string> &makefile_depends);
 
-  void CreateLinkScriptJSON(const char *name, const std::vector<std::string>& filesName
-            , std::vector<std::string> const &link_commands);
+  void CreateLinkScriptJSON(const char *name,
+                            const std::vector<std::string>& files_name,
+                            const std::string& libraries_name,
+                            std::vector<std::string> const &link_commands);
 
   std::unique_ptr<cmLinkLineComputer> CreateLinkLineComputer(
     cmOutputConverter* outputConverter, cmStateDirectory const& stateDir);

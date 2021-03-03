@@ -1748,11 +1748,50 @@ void cmMakefileTargetGenerator::AppendObjectDepends(
                                          this->BuildFileNameFull.c_str());
 }
 
+void cmMakefileTargetGenerator::AppendLinkDependsForJson(
+        std::vector<std::string>& depends, const std::string& linkLanguage)
+{
+    // Add dependencies on the compiled object files.
+    std::string const& fullPath =
+            this->LocalGenerator->ConvertToFullPath(
+                    this->LocalGenerator->GetHomeRelativeOutputPath());
+    for (std::string const& obj : this->Objects) {
+        std::string objTarget = cmStrCat(fullPath, obj);
+        depends.push_back(std::move(objTarget));
+    }
+
+    // Add dependencies on the external object files.
+    cm::append(depends, this->ExternalObjects);
+
+    // Add dependencies on targets that must be built first.
+    this->AppendTargetDepends(depends);
+
+    // Add a dependency on the link definitions file, if any.
+    if (cmGeneratorTarget::ModuleDefinitionInfo const* mdi =
+            this->GeneratorTarget->GetModuleDefinitionInfo(
+                    this->GetConfigName())) {
+        for (cmSourceFile const* src : mdi->Sources) {
+            depends.push_back(src->GetFullPath());
+        }
+    }
+
+    // Add a dependency on user-specified manifest files, if any.
+    std::vector<cmSourceFile const*> manifest_srcs;
+    this->GeneratorTarget->GetManifests(manifest_srcs, this->GetConfigName());
+    for (cmSourceFile const* manifest_src : manifest_srcs) {
+        depends.push_back(manifest_src->GetFullPath());
+    }
+
+    // Add user-specified dependencies.
+    this->GeneratorTarget->GetLinkDepends(depends, this->GetConfigName(),
+                                          linkLanguage);
+
+}
+
 void cmMakefileTargetGenerator::AppendLinkDepends(
   std::vector<std::string>& depends, const std::string& linkLanguage)
 {
   this->AppendObjectDepends(depends);
-
   // Add dependencies on targets that must be built first.
   this->AppendTargetDepends(depends);
 
@@ -1800,37 +1839,106 @@ void cmMakefileTargetGenerator::CloseFileStreams()
   this->FlagFileStream.reset();
 }
 
-void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, const std::vector<std::string>& filesName,
+std::vector<std::string> GetPathsLibraries(std::string libraries, const std::string& workingDirectory){
+    size_t pos = 0;
+    std::string token;
+    std::vector<std::string> working_directory_paths;
+    std::vector<std::string> result_string;
+    //split working directory
+    std::string tmp_dir(workingDirectory.begin() + 1, workingDirectory.end());
+    while ((pos = tmp_dir.find('/')) != std::string::npos) {
+        token = tmp_dir.substr(0, pos);
+        working_directory_paths.push_back(token);
+        tmp_dir.erase(0, pos + 1);
+    }
+    working_directory_paths.push_back(tmp_dir);
+
+    //split string by space
+    pos = libraries.find_first_not_of(' ');
+    token = "";
+    bool flag = true;
+    libraries.erase(0,pos);
+
+    pos = 0;
+    while (flag) {
+        int counter = 0;
+        if ((pos = libraries.find(' ')) != std::string::npos){
+            token = libraries.substr(0, pos);
+        } else {
+            flag = false;
+            token = libraries;
+        }
+
+        if(token[0] == '/'){
+            result_string.emplace_back(token);
+        } else if (token[0] == '.' && token[1] == '.' && token[2] == '/'){
+            std::string path;
+            while(token[0] == '.' && token[1] == '.'){
+                counter++;
+                token.erase(0, 3);
+            }
+            for(unsigned int i = 0; i < working_directory_paths.size() - counter; i++){
+                path = cmStrCat(path, '/', working_directory_paths[i]);
+            }
+            result_string.emplace_back(cmStrCat(path, '/', token));
+        } else if (token[0] != '-' && !token.empty()){
+            result_string.emplace_back(cmStrCat(workingDirectory, '/', token));
+        }
+
+        if (flag){
+            libraries.erase(0, pos + 1);
+        }
+
+    }
+
+
+    return result_string;
+}
+
+void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name,
+                                                     const std::vector<std::string> &files_name,
                                                      const std::vector<std::string> &link_commands) {
 
-    std::string linkScriptName =
+    std::string link_script_name =
             cmStrCat(this->TargetBuildDirectoryFull, '/', name);
 
-    std::string workingDirectory = cmSystemTools::CollapseFullPath(
+    std::string working_directory = cmSystemTools::CollapseFullPath(
             this->LocalGenerator->GetCurrentBinaryDirectory());
 
-    std::vector<std::string> resultStringArr;
+    std::vector<std::string> result_string_arr;
     std::string delimiter = " ";
     size_t pos = 0;
     std::string token;
-    for (auto file : filesName){
+    for (auto file : files_name){
         while ((pos = file.find(delimiter)) != std::string::npos) {
             token = file.substr(0, pos);
-            resultStringArr.emplace_back(cmStrCat(workingDirectory, '/', token));
+            result_string_arr.emplace_back(cmStrCat(working_directory, '/', token));
             file.erase(0, pos + delimiter.size());
         }
-        resultStringArr.emplace_back(cmStrCat(workingDirectory, '/', file));
+        result_string_arr.emplace_back(cmStrCat(working_directory, '/', file));
     }
 
-    cmGeneratedFileStream linkScriptStream(linkScriptName);
+    cmGeneratedFileStream linkScriptStream(link_script_name);
     linkScriptStream.SetCopyIfDifferent(true);
-    for (std::string link_command : link_commands) {
+    std::vector<std::string> libraries_path = GetPathsLibraries(libraries_name, working_directory);
+    result_string_arr.insert(result_string_arr.end(), libraries_path.begin(), libraries_path.end());
 
+    for (std::string link_command : link_commands) {
+        pos = link_command.find(delimiter);
+        std::string tmp_link_command = link_command.substr(0, pos);
         if (!link_command.empty() && link_command[0] != ':') {
             linkScriptStream << link_command << "\n";
         }
-
-        this->GlobalGenerator->AddCXXLinkCommand(resultStringArr, workingDirectory, link_command);
+        while ((pos = tmp_link_command.find("/")) != std::string::npos) {
+            token = tmp_link_command.substr(0, pos);
+            tmp_link_command.erase(0, pos + delimiter.size());
+        }
+        if(tmp_link_command == "ranlib"){
+            this->GlobalGenerator->AddCXXLinkCommand(std::vector<std::string>{ }, working_directory, link_command);
+        }
+        else {
+            this->GlobalGenerator->AddCXXLinkCommand(result_string_arr, working_directory, link_command);
+        }
     }
 }
 
