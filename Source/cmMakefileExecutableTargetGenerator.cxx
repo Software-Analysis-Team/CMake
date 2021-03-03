@@ -266,7 +266,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, depends, linkLibs, real_link_commands);
+      this->CreateLinkScriptJSON(name, depends, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;

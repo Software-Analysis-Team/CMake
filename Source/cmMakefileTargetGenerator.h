@@ -154,7 +154,6 @@ protected:
 
   void CreateLinkScriptJSON(const char *name,
                             const std::vector<std::string>& files_name,
-                            const std::string& libraries_name,
                             std::vector<std::string> const &link_commands);
 
   std::unique_ptr<cmLinkLineComputer> CreateLinkLineComputer(

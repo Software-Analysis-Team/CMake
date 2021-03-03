@@ -204,7 +204,7 @@ void cmGlobalUnixMakefileGenerator3::AddCXXLinkCommand(const std::vector<std::st
                                   << "\"";
 
        if (i < sourceFiles.size() - 1) {
-           *this->LinkCommandDatabase << ", ";
+           *this->LinkCommandDatabase << ",\n\t\t\t";
        }
    }
 

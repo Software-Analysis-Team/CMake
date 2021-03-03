@@ -282,6 +282,9 @@ void cmMakefileLibraryTargetGenerator::WriteNvidiaDeviceLibraryRules(
   std::vector<std::string> depends;
   this->AppendLinkDepends(depends, linkLanguage);
 
+  std::vector<std::string> dependsForJson;
+  this->AppendLinkDependsForJson(dependsForJson, linkLanguage);
+
   // Add language-specific flags.
   std::string langFlags;
   this->LocalGenerator->AddLanguageFlagsForLinking(
@@ -401,7 +404,7 @@ void cmMakefileLibraryTargetGenerator::WriteNvidiaDeviceLibraryRules(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, std::vector<std::string>{vars.Object}, vars.LinkLibraries, real_link_commands);
+      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -445,8 +448,13 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
   // Build list of dependencies.
   std::vector<std::string> depends;
   this->AppendLinkDepends(depends, linkLanguage);
+
+  std::vector<std::string> dependsForJson;
+  this->AppendLinkDependsForJson(dependsForJson, linkLanguage);
+
   if (!this->DeviceLinkObject.empty()) {
     depends.push_back(this->DeviceLinkObject);
+    dependsForJson.push_back(this->DeviceLinkObject);
   }
 
   // Create set of linking flags.
@@ -910,11 +918,7 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      if (buildObjs.empty()) {
-          this->CreateLinkScriptJSON(name, files, linkLibs, real_link_commands);
-      } else {
-          this->CreateLinkScriptJSON(name, std::vector<std::string>{buildObjs}, linkLibs, real_link_commands);
-      }
+      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
 
   } else {
     // No link script.  Just use the link rule directly.
