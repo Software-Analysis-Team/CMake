@@ -1850,7 +1850,10 @@ void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, std::vect
 
     cmGeneratedFileStream linkScriptStream(linkScriptName);
     linkScriptStream.SetCopyIfDifferent(true);
-    for (unsigned long i = 0; i < link_commands.size(); i++) {
+    for (size_t i = 0; i < link_commands.size(); i++) {
+        if (!link_commands[i].empty() && link_commands[i][0] != ':') {
+            linkScriptStream << link_commands[i] << "\n";
+        }
         if(i == 1){ //for runlib command
             this->GlobalGenerator->AddCXXLinkCommand(std::vector<std::string>(), workingDirectory, link_commands[i]);
         } else {
