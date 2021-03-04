@@ -403,8 +403,8 @@ void cmMakefileLibraryTargetGenerator::WriteNvidiaDeviceLibraryRules(
   if (useLinkScript) {
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
-      this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
+    this->CreateLinkScript(name, real_link_commands, commands1, depends);
+    this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -700,10 +700,6 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
 
   // Expand the rule variables.
   std::vector<std::string> real_link_commands;
-  std::vector<std::string> files;
-  std::string buildObjs;
-  // Collect up flags to link in needed libraries.
-  std::string linkLibs;
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -711,9 +707,9 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
     // Set path conversion for link script shells.
     this->LocalGenerator->SetLinkScriptShell(useLinkScript);
 
-
+    // Collect up flags to link in needed libraries.
+    std::string linkLibs;
     if (this->GeneratorTarget->GetType() != cmStateEnums::STATIC_LIBRARY) {
-
       std::unique_ptr<cmLinkLineComputer> linkLineComputer =
         this->CreateLinkLineComputer(
           this->LocalGenerator,
@@ -728,7 +724,7 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
 
     // Construct object file lists that may be needed to expand the
     // rule.
-
+    std::string buildObjs;
     this->CreateObjectLists(useLinkScript, useArchiveRules,
                             useResponseFileForObjects, buildObjs, depends,
                             useWatcomQuote);
@@ -875,7 +871,6 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
           real_link_commands.push_back(std::move(cmd));
         }
       }
-      files = object_strings;
       // Finish the archive.
       vars.Objects = "";
       for (std::string const& afc : archiveFinishCommands) {
@@ -917,9 +912,8 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
   if (useLinkScript) {
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
-      this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
-
+    this->CreateLinkScript(name, real_link_commands, commands1, depends);
+    this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;

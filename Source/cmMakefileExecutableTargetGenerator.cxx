@@ -508,7 +508,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   bool const useResponseFileForLibs =
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
-    // Expand the rule variables.
+  // Expand the rule variables.
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -549,7 +549,6 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     std::string manifests = this->GetManifests(this->GetConfigName());
 
     cmRulePlaceholderExpander::RuleVariables vars;
-
     vars.CMTargetName = this->GeneratorTarget->GetName().c_str();
     vars.CMTargetType =
       cmState::GetTargetTypeName(this->GeneratorTarget->GetType()).c_str();
@@ -630,8 +629,8 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   if (useLinkScript) {
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
-      this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
+    this->CreateLinkScript(name, real_link_commands, commands1, depends);
+    this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
