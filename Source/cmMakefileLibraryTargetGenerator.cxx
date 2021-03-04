@@ -404,7 +404,7 @@ void cmMakefileLibraryTargetGenerator::WriteNvidiaDeviceLibraryRules(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
+      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -918,7 +918,7 @@ void cmMakefileLibraryTargetGenerator::WriteLibraryRules(
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
+      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
 
   } else {
     // No link script.  Just use the link rule directly.

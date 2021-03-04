@@ -176,9 +176,6 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
   // Expand the rule variables.
-  std::string buildObjs;
-    // Collect up flags to link in needed libraries.
-    std::string linkLibs;
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -194,12 +191,14 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     linkLineComputer->SetUseWatcomQuote(useWatcomQuote);
     linkLineComputer->SetRelink(relink);
 
-
+    // Collect up flags to link in needed libraries.
+    std::string linkLibs;
     this->CreateLinkLibs(linkLineComputer.get(), linkLibs,
                          useResponseFileForLibs, depends);
 
     // Construct object file lists that may be needed to expand the
     // rule.
+    std::string buildObjs;
     this->CreateObjectLists(useLinkScript, false, useResponseFileForObjects,
                             buildObjs, depends, useWatcomQuote);
 
@@ -266,7 +265,7 @@ void cmMakefileExecutableTargetGenerator::WriteNvidiaDeviceExecutableRule(
     // Use a link script.
     const char* name = (relink ? "drelink.txt" : "dlink.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, depends, real_link_commands);
+      this->CreateLinkScriptJSON(name, real_link_commands, depends);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;
@@ -509,6 +508,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
   bool const useResponseFileForLibs =
     this->CheckUseResponseFileForLibraries(linkLanguage);
 
+    // Expand the rule variables.
   {
     bool useWatcomQuote =
       this->Makefile->IsOn(linkRuleVar + "_USE_WATCOM_QUOTE");
@@ -524,16 +524,14 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     linkLineComputer->SetUseWatcomQuote(useWatcomQuote);
     linkLineComputer->SetRelink(relink);
 
-    // Expand the rule variables.
     // Collect up flags to link in needed libraries.
     std::string linkLibs;
     this->CreateLinkLibs(linkLineComputer.get(), linkLibs,
                          useResponseFileForLibs, depends);
 
-    std::string buildObjs;
     // Construct object file lists that may be needed to expand the
     // rule.
-
+    std::string buildObjs;
     this->CreateObjectLists(useLinkScript, false, useResponseFileForObjects,
                             buildObjs, depends, useWatcomQuote);
     if (!this->DeviceLinkObject.empty()) {
@@ -633,7 +631,7 @@ void cmMakefileExecutableTargetGenerator::WriteExecutableRule(bool relink)
     // Use a link script.
     const char* name = (relink ? "relink.txt" : "link.txt");
       this->CreateLinkScript(name, real_link_commands, commands1, depends);
-      this->CreateLinkScriptJSON(name, dependsForJson, real_link_commands);
+      this->CreateLinkScriptJSON(name, real_link_commands, dependsForJson);
   } else {
     // No link script.  Just use the link rule directly.
     commands1 = real_link_commands;

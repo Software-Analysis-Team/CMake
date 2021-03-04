@@ -1,4 +1,4 @@
-find . -type f -not \( -name '*o' -or -name '*json' \) -delete
+find . -type f -not \( -name '*o' -or -name '*json' -or -name 'ade' -or -name ippicv \) -delete
 
 find . \( ! -regex '.*/\..*' \) -type f | wc -l
 

@@ -4,16 +4,15 @@ import os
 import subprocess
 import shlex
 
-
 def prepare_commands():
     mycmake = '/home/gleb/Documents/CMake/cmake-build-debug/bin/cmake'
-
+	
     process1 = subprocess.Popen(f'{mycmake} ..'
                                 , shell=True)
     process1.wait()
     print(f'myCMake return code: {process1.returncode}')
-
-    process_delete = subprocess.Popen('find . -type f -not \( -name \'*o\' -or -name \'*json\' \) -delete'
+s
+    process_delete = subprocess.Popen('find . -type f -not \( -name \'*o\' -or -name \'*json\' -or -name \'libippicv.a\' \) -delete'
                                 , shell=True)
     process_delete.wait()
 
@@ -35,10 +34,10 @@ def write_statistics():
     stdout, stderr = process2.communicate()
     new_stdout = stdout.decode("utf-8").replace(' ', '').split('\n')
     total_files, total_lines = len(new_stdout) - 2, new_stdout[len(new_stdout) - 2].split('t')[0]
-    print(f'totalf files: {total_files}\n')
+    print(f'total files: {total_files}\n')
     print(f'total lines: {total_lines}')
     with open('statistics', "w") as file:
-        file.write(f'totalf files: {total_files}\n')
+        file.write(f'total files: {total_files}\n')
         file.write(f'total lines: {total_lines}')
 
 
@@ -46,21 +45,38 @@ def sort_link_json(tmp_name, link_name):
     with open(link_name, "r") as read_file:
         link_data = json.load(read_file)
 
-    json_elems = []
+    library_items = []
+    other_items = []
+    shared_items = []
     with open(tmp_name, "w") as json_file:
         json_file.write('[\n')
         for elem in link_data:
             fst_command = elem.get('command').split(' ')[0].split(os.path.sep)
             command = fst_command[len(fst_command) - 1]
             if command == 'ar' or command == 'ranlib':
-                json.dump(elem, json_file, indent=2)
-                json_file.write(',\n')
+                library_items.append(elem)
+            elif elem.get('command').split(' ').count('-shared') > 0:
+                shared_items.append(elem)
             else:
-                json_elems.append(elem)
+                other_items.append(elem)
 
-        for i in range(len(json_elems)):
-            json.dump(json_elems[i], json_file, indent=2)
-            if i != len(json_elems) - 1:
+        for i in range(len(library_items)):
+            json.dump(library_items[i], json_file, indent=2)
+            if len(other_items) == 0 and len(shared_items) == 0 and i == len(library_items) - 1:
+                json_file.write('\n')
+            else:
+                json_file.write(',\n')
+
+        for i in range(len(shared_items)):
+            json.dump(shared_items[i], json_file, indent=2)
+            if len(other_items) == 0 and i == len(shared_items) - 1:
+                json_file.write('\n')
+            else:
+                json_file.write(',\n')
+
+        for i in range(len(other_items)):
+            json.dump(other_items[i], json_file, indent=2)
+            if i != len(other_items) - 1:
                 json_file.write(',\n')
             else:
                 json_file.write('\n')
@@ -91,7 +107,7 @@ def main():
     prepare_commands()
 
     sort_link_json(tmp_name, link_name)
-
+    print(os.getcwd())
     with open(link_name, "r") as read_file:
         link_data = json.load(read_file)
 
@@ -137,6 +153,7 @@ def main():
                                    , stderr=subprocess.PIPE)
         _, stderr = process.communicate()
         return_code = process.returncode
+        print(os.getcwd())
         print(process)
         print(stderr)
 

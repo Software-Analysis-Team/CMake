@@ -1839,23 +1839,22 @@ void cmMakefileTargetGenerator::CloseFileStreams()
   this->FlagFileStream.reset();
 }
 
-void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name,
-                                                     const std::vector<std::string> &files_name,
-                                                     const std::vector<std::string> &link_commands) {
+void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name, std::vector<std::string> const& link_commands,
+                                                     const std::vector<std::string>& makefile_depends) {
 
-    std::string link_script_name =
+    std::string linkScriptName =
             cmStrCat(this->TargetBuildDirectoryFull, '/', name);
 
-    std::string working_directory = cmSystemTools::CollapseFullPath(
+    std::string workingDirectory = cmSystemTools::CollapseFullPath(
             this->LocalGenerator->GetCurrentBinaryDirectory());
 
-    cmGeneratedFileStream linkScriptStream(link_script_name);
+    cmGeneratedFileStream linkScriptStream(linkScriptName);
     linkScriptStream.SetCopyIfDifferent(true);
     for (unsigned long i = 0; i < link_commands.size(); i++) {
         if(i == 1){ //for runlib command
-            this->GlobalGenerator->AddCXXLinkCommand(std::vector<std::string>(), working_directory, link_commands[i]);
+            this->GlobalGenerator->AddCXXLinkCommand(std::vector<std::string>(), workingDirectory, link_commands[i]);
         } else {
-            this->GlobalGenerator->AddCXXLinkCommand(files_name, working_directory, link_commands[i]);
+            this->GlobalGenerator->AddCXXLinkCommand(makefile_depends, workingDirectory, link_commands[i]);
         }
 
     }
@@ -1863,7 +1862,7 @@ void cmMakefileTargetGenerator::CreateLinkScriptJSON(const char *name,
 }
 
 
-void cmMakefileTargetGenerator::CreateLinkScript(const char *name, std::vector<std::string> const &link_commands,
+void cmMakefileTargetGenerator::CreateLinkScript(const char *name, std::vector<std::string> const& link_commands,
                                                  std::vector<std::string> &makefile_commands,
                                                  std::vector<std::string> &makefile_depends)
 {
